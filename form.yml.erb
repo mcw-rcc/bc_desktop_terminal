@@ -1,0 +1,47 @@
+<%-
+  # get _list_accounts
+  a_cmd = "/opt/slurm/19.05.7/bin/sacctmgr -p -n show assoc user=$USER | awk -F'|' '{print $2}'"
+  begin
+    output, status = Open3.capture2e(a_cmd)
+    if status.success?
+      _list_accounts = output.split("\n").map(&:strip).reject(&:blank?).sort
+    else
+      raise output
+    end
+  rescue => e
+    _list_accounts = []
+    a_error = e.message.strip
+  end
+-%>
+---
+cluster: "hpc"
+form:
+  - modules
+  - account
+  - bc_num_hours
+  - bc_email_on_started
+  - num_of_cores
+attributes:
+  bc_num_hours: 
+    min: 1
+    max: 8
+    step: 1
+  num_of_cores: 1
+  account:
+    label: "SLURM Account"
+    required: true
+    <%- if a_error -%>
+      <span class="text-danger">Error when parsing accounts:</span>
+      ```
+      <%= a_error.gsub("\n", "\n      ") %>
+      ```
+    <%- end -%>
+    <%- if _list_accounts.blank? -%>
+    widget: text_field
+    <%- else -%>
+    widget: select
+    options:
+      <%- _list_accounts.each do |q| -%>
+      - [ "<%= q %>", "<%= q %>" ]
+      <%- end -%>
+    <%- end -%>

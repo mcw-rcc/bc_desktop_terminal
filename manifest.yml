@@ -1,0 +1,7 @@
+---
+name: Compute Shell
+category: Interactive Apps
+subcategory: HPC 2020
+role: batch_connect
+description: |
+  This app will launch a shell on a cluster node.
